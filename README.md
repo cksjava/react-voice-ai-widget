@@ -281,5 +281,3 @@ CasaNeo is a reference VoiceAI platform demonstrating:
 This widget is the official way to embed CasaNeo agents in React applications.
 
 ```
-
----
