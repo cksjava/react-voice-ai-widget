@@ -279,5 +279,3 @@ CasaNeo is a reference VoiceAI platform demonstrating:
 * LiveKit-powered realtime AI conversations
 
 This widget is the official way to embed CasaNeo agents in React applications.
-
-```
