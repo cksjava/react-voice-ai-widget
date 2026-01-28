@@ -38,7 +38,7 @@ export function ReactVoiceAIWidget({
   }
 
   useEffect(() => {
-    getToken();
+    if (connect) getToken();
   }, [connect]);
 
   return (

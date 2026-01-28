@@ -73,6 +73,63 @@ export default HomePage;
 
 ---
 
+## Agent commands -> React Router navigation
+
+If your LiveKit agent publishes UI commands to the `agent_commands` topic (JSON: `{ "command": "navigate", "data": "/some/url" }`),
+use the **provider** + **router bridge** so the connection survives route changes and navigation works anywhere in your app.
+
+```tsx
+import { BrowserRouter, useNavigate } from "react-router-dom";
+import {
+  ReactVoiceAIProvider,
+  ReactVoiceAIRouterBridge,
+  useReactVoiceAI,
+} from "@aisense/react-voice-ai-widget";
+
+function RouterBridge() {
+  const navigate = useNavigate();
+  return <ReactVoiceAIRouterBridge navigate={navigate} />;
+}
+
+function ConnectButton() {
+  const { connect, isConnecting, isConnected } = useReactVoiceAI();
+  return (
+    <button onClick={() => connect()} disabled={isConnecting || isConnected}>
+      Connect Voice AI
+    </button>
+  );
+}
+
+export function App() {
+  return (
+    <BrowserRouter>
+      <ReactVoiceAIProvider
+        serverUrl={import.meta.env.VITE_SERVER_URL}
+        livekitUrl={import.meta.env.VITE_LIVEKIT_URL}
+        clientToken={import.meta.env.VITE_CLIENT_TOKEN}
+        agentId="1"
+        sessionId="1"
+        connect={false}
+      >
+        {/* Must be inside Router to access useNavigate() */}
+        <RouterBridge />
+
+        {/* Any component anywhere can call connect() */}
+        <ConnectButton />
+
+        {/* ...your routes/layout... */}
+      </ReactVoiceAIProvider>
+    </BrowserRouter>
+  );
+}
+```
+
+Notes:
+- The provider should be mounted once (typically near the app root) so the LiveKit connection doesn't break on navigation.
+- The widget (`ReactVoiceAIWidget`) still works for audio-only embedding, but it does not provide the global command/navigation wiring.
+
+---
+
 ## Props
 
 ```ts
