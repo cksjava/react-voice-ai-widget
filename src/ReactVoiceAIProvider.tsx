@@ -9,6 +9,7 @@ import {
   useReactVoiceAINavigatorState,
 } from "./ReactVoiceAIContext";
 import { parseAgentCommandMessage } from "./reactVoiceAICommands";
+import { ParticipantAttributesSetter } from "./ParticipantAttributesSetter";
 
 export type ReactVoiceAIProviderProps = ReactVoiceAIConnectParams & {
   connect?: boolean;
@@ -57,6 +58,7 @@ export function ReactVoiceAIProvider({
   children,
   className,
   commandsTopic = "agent_commands",
+  uiAccessToken,
 }: ReactVoiceAIProviderProps) {
   const [token, setToken] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -68,12 +70,13 @@ export function ReactVoiceAIProvider({
     clientToken,
     agentId,
     sessionId,
+    uiAccessToken,
   });
 
   // Keep latest params available for imperative connect().
   useEffect(() => {
-    paramsRef.current = { serverUrl, livekitUrl, clientToken, agentId, sessionId };
-  }, [serverUrl, livekitUrl, clientToken, agentId, sessionId]);
+    paramsRef.current = { serverUrl, livekitUrl, clientToken, agentId, sessionId, uiAccessToken };
+  }, [serverUrl, livekitUrl, clientToken, agentId, sessionId, uiAccessToken]);
 
   // Prop-driven connect (optional).
   useEffect(() => {
@@ -85,11 +88,13 @@ export function ReactVoiceAIProvider({
   const fetchToken = useCallback(async (p: ReactVoiceAIConnectParams) => {
     setIsConnecting(true);
     try {
-      const response = await axios.post(
-        p.serverUrl,
-        { agentId: p.agentId, sessionId: p.sessionId },
-        { headers: { Authorization: `Bearer ${p.clientToken}` } }
-      );
+      const body: Record<string, string> = { agentId: p.agentId, sessionId: p.sessionId };
+      if (p.uiAccessToken != null && p.uiAccessToken !== "") {
+        body.uiAccessToken = p.uiAccessToken;
+      }
+      const response = await axios.post(p.serverUrl, body, {
+        headers: { Authorization: `Bearer ${p.clientToken}` },
+      });
       setToken(response.data.token);
     } finally {
       setIsConnecting(false);
@@ -136,6 +141,9 @@ export function ReactVoiceAIProvider({
           <LiveKitRoom serverUrl={livekitUrl} token={token} connect={requestedConnect} audio>
             <RoomAudioRenderer />
             <ReactVoiceAICommandsSubscriber topic={commandsTopic} />
+            {uiAccessToken != null && uiAccessToken !== "" ? (
+              <ParticipantAttributesSetter attributes={{ uiAccessToken }} />
+            ) : null}
             {children}
           </LiveKitRoom>
         ) : (

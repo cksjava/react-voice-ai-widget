@@ -6,6 +6,8 @@ export type ReactVoiceAIConnectParams = {
   clientToken: string;
   agentId: string;
   sessionId: string;
+  /** Optional. Passed to backend for token and set as participant attribute for the agent. */
+  uiAccessToken?: string;
 };
 
 export type ReactVoiceAINavigator = (to: string) => void;
